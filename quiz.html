@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="פתרון מבחני התרגול לשלב א' ישירות בדפדפן, עם בדיקה אוטומטית, הסברים וטריקים. בלי שרת – הכול נשאר במכשיר.">
+<meta name="theme-color" content="#F3F5F9" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0B111A" media="(prefers-color-scheme: dark)">
+<title>מבחן אונליין – שלב א'</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%231F4FD8'/%3E%3Ctext x='16' y='23' font-size='18' text-anchor='middle' fill='white' font-family='Arial'%3E%D7%90%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="template/style.css">
+<link rel="stylesheet" href="quiz/quiz.css">
+</head>
+<body>
+<div class="wrap">
+
+  <section id="picker">
+    <div class="top">
+      <h1>מבחן אונליין – שלב א'</h1>
+      <p class="lead">בוחרים מבחן, עונים על המסך (מקיפים תשובה או כותבים מספר), ובסוף לוחצים "סיום ובדיקה" – מקבלים ציון, את התשובות הנכונות והסבר לכל שאלה.</p>
+    </div>
+    <ul id="test-list"></ul>
+    <p class="note">הכול קורה בדפדפן: התשובות לא נשלחות לשום מקום, ונשמרות רק במכשיר הזה כדי שאפשר יהיה להמשיך אחר כך.
+      <a href="./">חזרה לדף הראשי והקבצים להדפסה</a></p>
+  </section>
+
+  <section id="runner" hidden>
+    <div class="bar">
+      <div class="bar-row">
+        <h1 id="run-title"></h1>
+        <span id="timer" aria-label="זמן שעבר">00:00</span>
+        <span id="progress"></span>
+      </div>
+      <div class="bar-row">
+        <label class="instant"><input type="checkbox" id="instant"> בדיקה מיד אחרי כל תשובה (מצב תרגול)</label>
+        <div class="actions">
+          <button id="submit" class="primary" type="button">סיום ובדיקה</button>
+          <button id="restart" type="button">התחלה מחדש</button>
+          <button id="back" type="button">כל המבחנים</button>
+        </div>
+      </div>
+    </div>
+    <div id="summary" role="status" hidden></div>
+    <div id="paper"></div>
+    <div class="bottom-actions">
+      <a id="pdf-link" class="btn" href="#">PDF להדפסה</a>
+    </div>
+  </section>
+
+</div>
+<script src="quiz/tests-data.js"></script>
+<script src="quiz/grading.js"></script>
+<script src="quiz/quiz.js"></script>
+</body>
+</html>

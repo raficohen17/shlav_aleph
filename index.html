@@ -44,6 +44,10 @@ h2{font:600 1.2rem/1.3 var(--f-num);margin:32px 0 12px}
 .card p{margin:0;color:var(--muted);font-size:.95rem}
 .btn{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border-radius:10px;
   background:var(--accent);color:var(--accent-ink);font-weight:700;text-decoration:none}
+.btns{margin-top:auto;display:flex;gap:8px;flex-wrap:wrap}
+.btns .btn{margin-top:0;flex:1 1 auto}
+.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.btn.wide{margin:0 0 18px;padding:0 22px}
 .btn:focus-visible,a:focus-visible{outline:3px solid var(--mark);outline-offset:2px}
 .panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:16px 20px}
 .panel ul,.panel ol{margin:0;padding-inline-start:20px}
@@ -56,7 +60,8 @@ footer{margin-top:32px;color:var(--muted);font-size:.9rem}
 <body>
 <main>
   <h1>מבחני תרגול – מחוננים שלב א'</h1>
-  <p class="lead">5 מבחני תרגול מקוריים לכיתה ב', במבנה של מבחן הסינון הרשמי של משרד החינוך. בעברית מנוקדת, להדפסה, עם פתרונות, הסבר וטריק לכל שאלה בעמוד האחרון.</p>
+  <p class="lead">8 מבחני תרגול מקוריים לכיתה ב', במבנה של מבחן הסינון הרשמי של משרד החינוך. בעברית מנוקדת – להדפסה (PDF) או לפתרון אונליין בדפדפן, עם ציון, פתרונות, הסבר וטריק לכל שאלה.</p>
+  <p><a class="btn wide" href="quiz.html">מבחן אונליין – בחירת מבחן</a></p>
 
   <aside class="disclaimer" role="note" aria-label="הבהרה">
     <strong>הבהרה:</strong> זהו פרויקט תחביב, שנועד להדגים איך אפשר להשתמש במודלי שפה (LLM) כדי ליצור עזרי למידה.
@@ -65,11 +70,14 @@ footer{margin-top:32px;color:var(--muted);font-size:.9rem}
   </aside>
 
   <ul class="tests">
-    <li class="card"><span class="num">מבחן 1</span><h3>הדולפין · שאלה אחת קטנה</h3><p>כינוי גוף, כותרת, סדר אירועים · שעון, שרשרת השוואות, פי כמה</p><a class="btn" href="pdf/test_1.pdf">פתיחה (PDF)</a></li>
-    <li class="card"><span class="num">מבחן 2</span><h3>קורי העכביש · מה מסתתר במחסן?</h3><p>סיפור עם תפנית, השלמה פתוחה · חשבתי על מספר, מטבעות, סדרה מתחלפת</p><a class="btn" href="pdf/test_2.pdf">פתיחה (PDF)</a></li>
-    <li class="card"><span class="num">מבחן 3</span><h3>שעועית בצנצנת · אלון רוצה כלב</h3><p>טקסט הוראות, שאלת יישום · שרשרת כפלית, יחס, סדרה יורדת, סימן חסר</p><a class="btn" href="pdf/test_3.pdf">פתיחה (PDF)</a></li>
-    <li class="card"><span class="num">מבחן 4</span><h3>פינגוין הקיסר · יום ההולדת של שירן</h3><p>"מה אפשר ללמוד משורות", תפנית · מינימום מטבעות, הקטן מבין ארבעה, העברה</p><a class="btn" href="pdf/test_4.pdf">פתיחה (PDF)</a></li>
-    <li class="card"><span class="num">מבחן 5</span><h3>שיניים בריאות · היום הראשון של רותם</h3><p>טקסט המלצות, סדר אירועים · מאזניים, יחס, שעון, חשבתי על מספר</p><a class="btn" href="pdf/test_5.pdf">פתיחה (PDF)</a></li>
+    <li class="card"><span class="num">מבחן 1</span><h3>הדולפין · שאלה אחת קטנה</h3><p>כינוי גוף, כותרת, סדר אירועים · שעון, שרשרת השוואות, פי כמה</p><div class="btns"><a class="btn" href="quiz.html#test-1">פתרון אונליין</a><a class="btn ghost" href="pdf/test_1.pdf">PDF להדפסה</a></div></li>
+    <li class="card"><span class="num">מבחן 2</span><h3>קורי העכביש · מה מסתתר במחסן?</h3><p>סיפור עם תפנית, השלמה פתוחה · חשבתי על מספר, מטבעות, סדרה מתחלפת</p><div class="btns"><a class="btn" href="quiz.html#test-2">פתרון אונליין</a><a class="btn ghost" href="pdf/test_2.pdf">PDF להדפסה</a></div></li>
+    <li class="card"><span class="num">מבחן 3</span><h3>שעועית בצנצנת · אלון רוצה כלב</h3><p>טקסט הוראות, שאלת יישום · שרשרת כפלית, יחס, סדרה יורדת, סימן חסר</p><div class="btns"><a class="btn" href="quiz.html#test-3">פתרון אונליין</a><a class="btn ghost" href="pdf/test_3.pdf">PDF להדפסה</a></div></li>
+    <li class="card"><span class="num">מבחן 4</span><h3>פינגוין הקיסר · יום ההולדת של שירן</h3><p>"מה אפשר ללמוד משורות", תפנית · מינימום מטבעות, הקטן מבין ארבעה, העברה</p><div class="btns"><a class="btn" href="quiz.html#test-4">פתרון אונליין</a><a class="btn ghost" href="pdf/test_4.pdf">PDF להדפסה</a></div></li>
+    <li class="card"><span class="num">מבחן 5</span><h3>שיניים בריאות · היום הראשון של רותם</h3><p>טקסט המלצות, סדר אירועים · מאזניים, יחס, שעון, חשבתי על מספר</p><div class="btns"><a class="btn" href="quiz.html#test-5">פתרון אונליין</a><a class="btn ghost" href="pdf/test_5.pdf">PDF להדפסה</a></div></li>
+    <li class="card"><span class="num">מבחן 6</span><h3>הדבורים · יום שישי בשוק</h3><p>כינוי גוף, השלמה פתוחה, כותרת · מאזניים, שעון, "בכמה", אילו מטבעות</p><div class="btns"><a class="btn" href="quiz.html#test-6">פתרון אונליין</a><a class="btn ghost" href="pdf/test_6.pdf">PDF להדפסה</a></div></li>
+    <li class="card"><span class="num">מבחן 7</span><h3>מאכיל ציפורים מבקבוק · השתיקה של רועי</h3><p>טקסט הוראות, יישום, תפנית · חשבתי על מספר, יחס, סדרה מתחלפת</p><div class="btns"><a class="btn" href="quiz.html#test-7">פתרון אונליין</a><a class="btn ghost" href="pdf/test_7.pdf">PDF להדפסה</a></div></li>
+    <li class="card"><span class="num">מבחן 8</span><h3>הלב · הפתק הישן</h3><p>"מה אפשר ללמוד משורות", סדר אירועים · שרשרת כפלית, שעון אחורה, הגדול מבין ארבעה</p><div class="btns"><a class="btn" href="quiz.html#test-8">פתרון אונליין</a><a class="btn ghost" href="pdf/test_8.pdf">PDF להדפסה</a></div></li>
   </ul>
 
   <h2>מבנה כל מבחן</h2>
@@ -78,6 +86,7 @@ footer{margin-top:32px;color:var(--muted);font-size:.9rem}
       <li><strong>חלק ראשון – הבנת הנקרא:</strong> 2 קטעים (מידעי/הוראות + סיפור), 12 שאלות.</li>
       <li><strong>חלק שני – חשבון:</strong> תרגילים (כולל חילוק), מספר חסר ואי-שוויונות, 4 בעיות מילוליות, חידות ציורים, תרגילי משולשים (∆ = ספרה חסרה).</li>
       <li>כ-30 פריטים. המבחן האמיתי נמשך כ-40 דקות בשני חלקים.</li>
+      <li><strong>אונליין:</strong> מקיפים תשובה בלחיצה או כותבים מספר, ובסוף מקבלים ציון, תשובות נכונות והסבר. אפשר להפעיל "בדיקה מיד אחרי כל תשובה" לתרגול. הכול נשאר בדפדפן – שום דבר לא נשלח.</li>
     </ul>
   </div>
 

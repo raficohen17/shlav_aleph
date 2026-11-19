@@ -1,0 +1,9 @@
+{
+  "name": "shlav-aleph",
+  "private": true,
+  "description": "Practice tests for the Israeli gifted screening (stage A, grade 2) with an in-browser quiz",
+  "scripts": {
+    "test": "node --test test/",
+    "build": "python3 scripts/build_quiz_data.py"
+  }
+}
