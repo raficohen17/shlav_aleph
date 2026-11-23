@@ -33,12 +33,12 @@ def extract(html: str) -> dict:
 
 
 def count_questions(html: str) -> int:
-    main = html.split('class="answers"')[0]
+    main = re.split(r'class="answers[ "]', html)[0]
     return len(re.findall(r'<div[^>]*class="q[ "]', main))
 
 
 def count_key_rows(html: str) -> int:
-    parts = html.split('class="answers"')
+    parts = re.split(r'class="answers[ "]', html)
     return len(re.findall(r"<tr><td>", parts[1])) if len(parts) > 1 else 0
 
 

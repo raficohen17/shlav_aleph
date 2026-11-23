@@ -41,6 +41,7 @@ ol.lines.long li { line-height: 1.7; }
 .pz table.puzzle { display: inline-table; margin: 2mm 0; }
 .answers { font-size: 11.5pt; line-height: 1.45; }
 .answers .ex { font-size: 11.5pt; }
+.answers.compact { font-size: 11pt; line-height: 1.38; } /* keeps the last key row off a page of its own */
 
 /* v3 – uniform puzzle symbols (✈ ♠ ♥ were tiny in Arial) */
 @font-face { font-family: 'PuzzleSym'; src: url('fonts/NotoSansSymbols2-Regular.ttf') format('truetype'); unicode-range: U+25A0-25FF, U+2600-27BF, U+2B50; }
