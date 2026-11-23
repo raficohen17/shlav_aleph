@@ -28,6 +28,28 @@ test('multiple choice uses the leading key letter', () => {
   assert.throws(() => g.expectedAnswer('19', '', true));
 });
 
+test('stage B multiple choice uses the leading option number', () => {
+  const e = g.expectedAnswer('3 (117)', '', true);
+  assert.equal(e.letter, 'ג');
+  assert.ok(g.isCorrect(e, 'ג'));
+  assert.equal(g.expectedAnswer('1', '', true).letter, 'א');
+  assert.equal(g.expectedAnswer('4 (4:40)', '', true).letter, 'ד');
+  assert.throws(() => g.expectedAnswer('5', '', true));
+  assert.throws(() => g.expectedAnswer('12 (x)', '', true));
+});
+
+test('testIdFromFile', () => {
+  assert.deepEqual(g.testIdFromFile('test_3.html'), { id: '3', stage: 'A' });
+  assert.deepEqual(g.testIdFromFile('test_b7.html'), { id: 'b7', stage: 'B' });
+  assert.equal(g.testIdFromFile('reference_b.html'), null);
+});
+
+test('partLabel groups stage A by subject and stage B by part number', () => {
+  assert.equal(g.partLabel('חֵלֶק רִאשׁוֹן: קִטְעֵי קְרִיאָה'), 'הבנת הנקרא');
+  assert.equal(g.partLabel('חֵלֶק שֵׁנִי: שְׁאֵלוֹת בְּחֶשְׁבּוֹן'), 'חשבון');
+  assert.equal(g.partLabel('חֵלֶק 4: מָה הַמִּסְפָּר הֶחָסֵר?'), 'חלק 4');
+});
+
 test('exact number from the key', () => {
   const e = g.expectedAnswer('83', '', false);
   assert.ok(g.isCorrect(e, '83'));
@@ -71,8 +93,8 @@ test('formatTime', () => {
 // Every test in the repo must grade cleanly: question count = key rows, and every key parses.
 test('all tests have a gradable answer key', () => {
   const dir = path.join(__dirname, '..', 'tests');
-  const files = fs.readdirSync(dir).filter((f) => /^test_\d+\.html$/.test(f));
-  assert.ok(files.length >= 5);
+  const files = fs.readdirSync(dir).filter((f) => g.testIdFromFile(f));
+  assert.ok(files.length >= 16);
   for (const f of files) {
     const html = fs.readFileSync(path.join(dir, f), 'utf8');
     const [main, key] = html.split('class="answers"');
@@ -81,7 +103,7 @@ test('all tests have a gradable answer key', () => {
     assert.equal(qs.length, rows.length, f + ': questions vs key rows');
     qs.forEach((m, i) => {
       const accept = (/data-accept="([^"]*)"/.exec(m[1]) || [])[1] || '';
-      const isMc = /class="opts/.test(m[0]);
+      const isMc = /class="(opts|fig-opts)/.test(m[0]);
       const e = g.expectedAnswer(rows[i], accept, isMc);
       if (!isMc && !accept) assert.equal(e.type, 'num', `${f} item ${i + 1}: open item without data-accept must have a number key, got "${rows[i]}"`);
     });

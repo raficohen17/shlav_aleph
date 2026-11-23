@@ -45,3 +45,28 @@ ol.lines.long li { line-height: 1.7; }
 /* v3 – uniform puzzle symbols (✈ ♠ ♥ were tiny in Arial) */
 @font-face { font-family: 'PuzzleSym'; src: url('fonts/NotoSansSymbols2-Regular.ttf') format('truetype'); unicode-range: U+25A0-25FF, U+2600-27BF, U+2B50; }
 table.puzzle td, .sym, .ex { font-family: 'PuzzleSym', Arial, sans-serif !important; }
+
+/* ===== Stage B additions ===== */
+/* Answer options numbered 1–4 with a box to mark X, like the official booklet */
+ol.opts.num{list-style:none;padding-right:2mm}
+ol.opts.num li{display:flex;align-items:center;gap:3mm;margin:1.2mm 0}
+ol.opts.num li .box{display:inline-block;width:5mm;height:5mm;border:1.5px solid #000;flex:none}
+ol.opts.num li .n{font-size:10pt;color:#333;width:3mm;flex:none}
+ol.opts.num.row{display:flex;flex-wrap:wrap;gap:2mm 10mm}
+ol.opts.num.row li{margin:0}
+/* Analogy stem: bold word pair */
+.pair{font-weight:700;font-size:17pt;text-align:center;margin:2mm 0}
+/* Figures */
+.fig{display:flex;justify-content:center;align-items:center;gap:4mm;flex-wrap:wrap;direction:ltr;margin:3mm 0}
+.fig svg{display:block;flex:none}
+.fig .cell{border:2px solid #000;display:flex;align-items:center;justify-content:center}
+.fig .cell.q{border-style:dashed}
+.fig-opts{display:flex;justify-content:center;gap:6mm;direction:rtl;margin:2mm 0 4mm;flex-wrap:wrap}
+.fig-opts .fo{display:flex;flex-direction:column;align-items:center;gap:1.5mm}
+.fig-opts .fo .lbl{display:flex;align-items:center;gap:2mm;font-size:11pt}
+.fig-opts .fo .lbl .box{display:inline-block;width:5mm;height:5mm;border:1.5px solid #000}
+.example{border:1.5px dashed #555;border-radius:3mm;padding:2mm 4mm;margin:3mm 0;background:#f6f6f6}
+.example .sol{font-size:12.5pt;margin-top:1mm}
+.part-title{font-size:19pt;font-weight:700;margin:2mm 0 1mm}
+/* the "?" cell carries class q – don't let the question margin push matrix rows apart */
+.fig .cell.q{margin:0 !important;page-break-inside:auto}

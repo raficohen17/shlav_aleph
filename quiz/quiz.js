@@ -5,8 +5,12 @@
 
   const G = window.ShlavGrading;
   const TESTS = window.SHLAV_TESTS || [];
-  const TIME_LIMIT = 40 * 60;
+  // stage A: the real test is ~40 minutes; stage B: no limit shown (elapsed time only)
+  const TIME_LIMIT = { A: 40 * 60, B: Infinity };
+  const OPTION = 'ol.opts li, .fig-opts .fo';
+  const QUESTION = '.q:not(.cell)'; // stage B marks the "?" figure cell with class q too
   const $ = (sel, el = document) => el.querySelector(sel);
+  const limitOf = (test) => TIME_LIMIT[test.stage] || TIME_LIMIT.A;
 
   const ui = {
     picker: $('#picker'), list: $('#test-list'), runner: $('#runner'), paper: $('#paper'),
@@ -35,25 +39,33 @@
   // ---------- picker ----------
   function renderPicker() {
     ui.list.innerHTML = '';
-    TESTS.forEach((t) => {
-      const saved = load(t.id);
-      const li = document.createElement('li');
-      li.className = 'pick';
-      const status = saved ? (saved.submitted ? 'נבדק' : 'בהתקדמות') : '';
-      li.innerHTML =
-        '<a class="pick-btn" href="#test-' + t.id + '"><span class="pick-num">מבחן ' + t.id + '</span>' +
-        '<span class="pick-meta">' + t.questions + ' שאלות' + (status ? ' · ' + status : '') + '</span></a>';
-      ui.list.appendChild(li);
+    [['A', "שלב א'"], ['B', "שלב ב'"]].forEach(([stage, name]) => {
+      const tests = TESTS.filter((t) => (t.stage || 'A') === stage);
+      if (!tests.length) return;
+      const head = document.createElement('li');
+      head.className = 'pick-stage';
+      head.textContent = name;
+      ui.list.appendChild(head);
+      tests.forEach((t) => {
+        const saved = load(t.id);
+        const li = document.createElement('li');
+        li.className = 'pick';
+        const status = saved ? (saved.submitted ? 'נבדק' : 'בהתקדמות') : '';
+        li.innerHTML =
+          '<a class="pick-btn" href="#test-' + t.id + '"><span class="pick-num">' + escapeHtml(displayName(t)) + '</span>' +
+          '<span class="pick-meta">' + t.questions + ' שאלות' + (status ? ' · ' + status : '') + '</span></a>';
+        ui.list.appendChild(li);
+      });
     });
   }
 
+  const displayName = (t) => 'מבחן ' + String(t.id).replace(/^b/, 'ב');
+
   // ---------- building a test ----------
   function partOf(el, headings) {
-    let part = 'reading';
+    let part = G.partLabel('');
     headings.forEach((h) => {
-      if (h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) {
-        part = /חשבון/.test(h.textContent.replace(/[֑-ׇ]/g, '')) ? 'math' : 'reading';
-      }
+      if (h.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING) part = G.partLabel(h.textContent);
     });
     return part;
   }
@@ -65,19 +77,19 @@
     const rows = key ? [...key.querySelectorAll('tr')].filter((tr) => tr.querySelector('td')) : [];
     root.querySelectorAll('section.cover, section.answers, .page-break, p.next, p.stop, p.end').forEach((n) => n.remove());
 
-    const headings = [...root.querySelectorAll('h2')];
-    const qs = [...root.querySelectorAll('.q')];
+    const headings = [...root.querySelectorAll('h2, .part-title')];
+    const qs = [...root.querySelectorAll(QUESTION)];
     if (qs.length !== rows.length) throw new Error('מספר השאלות לא תואם למפתח (' + qs.length + '/' + rows.length + ')');
 
     const items = qs.map((q, i) => {
       const cells = rows[i].querySelectorAll('td');
-      const opts = q.querySelector('ol.opts');
+      const opts = q.querySelector('ol.opts, .fig-opts');
       const expected = G.expectedAnswer(cells[1].textContent, q.getAttribute('data-accept') || '', !!opts);
       const item = { el: q, expected, explain: cells[2] ? cells[2].innerHTML : '', part: partOf(q, headings), response: null, input: null };
       q.dataset.idx = String(i);
       if (opts) {
         opts.setAttribute('role', 'radiogroup');
-        [...opts.querySelectorAll('li')].forEach((li, j) => {
+        [...q.querySelectorAll(OPTION)].forEach((li, j) => {
           li.dataset.letter = G.LETTERS[j];
           li.setAttribute('role', 'radio');
           li.setAttribute('aria-checked', 'false');
@@ -103,7 +115,7 @@
 
   // ---------- running ----------
   function startTest(id) {
-    const test = TESTS.find((t) => t.id === id);
+    const test = TESTS.find((t) => String(t.id) === String(id));
     if (!test) return showPicker();
     stopTimer();
     let built;
@@ -117,7 +129,7 @@
     };
     ui.paper.innerHTML = '';
     ui.paper.appendChild(built.root);
-    ui.title.textContent = test.title || ('מבחן ' + id);
+    ui.title.textContent = test.title || displayName(test);
     ui.pdf.href = test.pdf;
     ui.summary.hidden = true;
     ui.summary.innerHTML = '';
@@ -139,7 +151,7 @@
     if (item.input) {
       item.input.value = value;
     } else {
-      item.el.querySelectorAll('ol.opts li').forEach((li) => {
+      item.el.querySelectorAll(OPTION).forEach((li) => {
         const on = li.dataset.letter === value;
         li.classList.toggle('chosen', on);
         li.setAttribute('aria-checked', on ? 'true' : 'false');
@@ -169,7 +181,7 @@
     if (!current) return;
     const secs = current.elapsed != null && current.submitted ? current.elapsed : (Date.now() - current.startedAt) / 1000;
     ui.timer.textContent = G.formatTime(secs);
-    ui.timer.classList.toggle('over', secs > TIME_LIMIT);
+    ui.timer.classList.toggle('over', secs > limitOf(current.test));
   }
 
   // ---------- grading ----------
@@ -177,7 +189,7 @@
     const ok = G.isCorrect(item.expected, item.response);
     item.el.classList.toggle('is-right', ok);
     item.el.classList.toggle('is-wrong', !ok);
-    item.el.querySelectorAll('ol.opts li').forEach((li) => {
+    item.el.querySelectorAll(OPTION).forEach((li) => {
       li.classList.toggle('correct', li.dataset.letter === item.expected.letter);
     });
     let fb = item.el.querySelector('.feedback');
@@ -196,21 +208,22 @@
     current.submitted = true;
     stopTimer();
     tick();
-    const score = { reading: [0, 0], math: [0, 0] };
+    const score = new Map(); // part label → [right, total], in test order
     current.items.forEach((it) => {
       const ok = showFeedback(it);
-      score[it.part][1] += 1;
-      if (ok) score[it.part][0] += 1;
+      if (!score.has(it.part)) score.set(it.part, [0, 0]);
+      score.get(it.part)[1] += 1;
+      if (ok) score.get(it.part)[0] += 1;
       if (it.input) it.input.readOnly = true;
     });
     current.items.forEach((it) => it.el.classList.add('locked'));
-    const total = score.reading[0] + score.math[0];
-    const max = score.reading[1] + score.math[1];
+    const parts = [...score.entries()];
+    const total = parts.reduce((s, [, v]) => s + v[0], 0);
+    const over = current.elapsed > limitOf(current.test);
     ui.summary.innerHTML =
-      '<h2>תוצאה: ' + total + ' מתוך ' + max + '</h2>' +
-      '<p>הבנת הנקרא: ' + score.reading[0] + '/' + score.reading[1] +
-      ' · חשבון: ' + score.math[0] + '/' + score.math[1] +
-      ' · זמן: ' + G.formatTime(current.elapsed) + (current.elapsed > TIME_LIMIT ? ' (יותר מ-40 דקות)' : '') + '</p>' +
+      '<h2>תוצאה: ' + total + ' מתוך ' + current.items.length + '</h2>' +
+      '<p>' + parts.map(([name, v]) => escapeHtml(name) + ': ' + v[0] + '/' + v[1]).join(' · ') +
+      ' · זמן: ' + G.formatTime(current.elapsed) + (over ? ' (יותר מ-40 דקות)' : '') + '</p>' +
       '<p class="hint">ליד כל שאלה מופיעים התשובה הנכונה, הסבר וטריק. כדאי לעבור דווקא על השאלות שסומנו ✗.</p>';
     ui.summary.hidden = false;
     ui.submit.disabled = true;
@@ -223,13 +236,14 @@
 
   // ---------- events ----------
   ui.paper.addEventListener('click', (e) => {
-    const li = e.target.closest('ol.opts li');
-    if (!li || !current || current.submitted) return;
-    const item = current.items[Number(li.closest('.q').dataset.idx)];
+    const li = e.target.closest(OPTION);
+    const q = li && li.closest(QUESTION);
+    if (!q || !current || current.submitted) return; // options inside a worked example are not questions
+    const item = current.items[Number(q.dataset.idx)];
     setResponse(item, li.dataset.letter);
   });
   ui.paper.addEventListener('keydown', (e) => {
-    const li = e.target.closest && e.target.closest('ol.opts li');
+    const li = e.target.closest && e.target.closest(OPTION);
     if (li && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); li.click(); }
   });
   ui.paper.addEventListener('input', (e) => {
@@ -269,8 +283,8 @@
   }
 
   function route() {
-    const m = /^#test-(\d+)$/.exec(location.hash);
-    if (m) { ui.submit.disabled = false; startTest(Number(m[1])); } else showPicker();
+    const m = /^#test-(b?\d+)$/.exec(location.hash);
+    if (m) { ui.submit.disabled = false; startTest(m[1]); } else showPicker();
   }
   window.addEventListener('hashchange', route);
   route();

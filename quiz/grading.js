@@ -63,7 +63,9 @@
   function expectedAnswer(keyText, accept, isMultipleChoice) {
     const text = String(keyText || '').trim();
     if (isMultipleChoice) {
-      const letter = LETTERS.find((l) => text.startsWith(l));
+      // stage A keys start with a letter (א–ד); stage B keys with the option number (1–4)
+      const digit = /^([1-4])(?!\d)/.exec(text);
+      const letter = digit ? LETTERS[Number(digit[1]) - 1] : LETTERS.find((l) => text.startsWith(l));
       if (!letter) throw new Error('no answer letter in: ' + text);
       return { type: 'mc', letter, display: text };
     }
@@ -89,13 +91,27 @@
     return expected.words.includes(normalizeText(response));
   }
 
+  /** "test_3.html" → {id:"3", stage:"A"}; "test_b3.html" → {id:"b3", stage:"B"}; anything else → null. */
+  function testIdFromFile(name) {
+    const m = /^test_(b?)(\d+)\.html$/.exec(String(name || ''));
+    return m ? { id: m[1] + m[2], stage: m[1] ? 'B' : 'A' } : null;
+  }
+
+  /** The score group of a part heading: stage A "reading"/"math" by its h2, stage B the part number. */
+  function partLabel(headingText) {
+    const t = String(headingText || '').replace(NIKUD, '');
+    const part = /חלק\s*(\d+)/.exec(t);
+    if (part) return 'חלק ' + part[1];
+    return /חשבון/.test(t) ? 'חשבון' : 'הבנת הנקרא';
+  }
+
   /** "mm:ss" for elapsed seconds. */
   function formatTime(totalSeconds) {
     const s = Math.max(0, Math.floor(totalSeconds));
     return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
   }
 
-  const api = { normalizeText, parseNumber, parseRule, expectedAnswer, isCorrect, formatTime, LETTERS };
+  const api = { normalizeText, parseNumber, parseRule, expectedAnswer, isCorrect, formatTime, testIdFromFile, partLabel, LETTERS };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.ShlavGrading = api;
 })(this);
