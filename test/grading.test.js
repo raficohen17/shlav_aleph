@@ -97,7 +97,7 @@ test('all tests have a gradable answer key', () => {
   assert.ok(files.length >= 16);
   for (const f of files) {
     const html = fs.readFileSync(path.join(dir, f), 'utf8');
-    const [main, key] = html.split('class="answers"');
+    const [main, key] = html.split(/class="answers[ "]/);
     const qs = [...main.matchAll(/<div([^>]*class="q[ "][^>]*)>[\s\S]*?(?=<div[^>]*class="q[ "]|<div class="page-break"|<p class="next|<p class="stop|<p class="end|$)/g)];
     const rows = [...key.matchAll(/<tr><td>[^<]*<\/td><td>([\s\S]*?)<\/td>/g)].map((m) => m[1].replace(/<[^>]+>/g, '').trim());
     assert.equal(qs.length, rows.length, f + ': questions vs key rows');
