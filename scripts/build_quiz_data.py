@@ -16,9 +16,12 @@ TESTS_DIR = ROOT / "tests"
 OUT = ROOT / "quiz" / "tests-data.js"
 
 
-def test_number(path: pathlib.Path) -> int:
-    match = re.fullmatch(r"test_(\d+)\.html", path.name)
-    return int(match.group(1)) if match else -1
+def test_key(path: pathlib.Path):
+    """Sort and id key: test_3.html → ("A", 3, "3"); test_b3.html → ("B", 3, "b3"); other files → None."""
+    match = re.fullmatch(r"test_(b?)(\d+)\.html", path.name)
+    if not match:
+        return None
+    return ("B" if match.group(1) else "A", int(match.group(2)), match.group(1) + match.group(2))
 
 
 def extract(html: str) -> dict:
@@ -41,16 +44,15 @@ def count_key_rows(html: str) -> int:
 
 def build() -> list:
     tests = []
-    for path in sorted(TESTS_DIR.glob("test_*.html"), key=test_number):
-        num = test_number(path)
-        if num < 1:
-            continue
+    paths = [p for p in TESTS_DIR.glob("test_*.html") if test_key(p)]
+    for path in sorted(paths, key=test_key):
+        stage, _, test_id = test_key(path)
         html = path.read_text(encoding="utf-8")
         q, rows = count_questions(html), count_key_rows(html)
         if q != rows:
             raise SystemExit(f"{path.name}: {q} questions but {rows} answer-key rows")
         item = extract(html)
-        item.update({"id": num, "pdf": f"pdf/test_{num}.pdf", "questions": q})
+        item.update({"id": test_id, "stage": stage, "pdf": f"pdf/test_{test_id}.pdf", "questions": q})
         tests.append(item)
     return tests
 
