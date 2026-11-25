@@ -91,10 +91,36 @@
     return expected.words.includes(normalizeText(response));
   }
 
-  /** "test_3.html" → {id:"3", stage:"A"}; "test_b3.html" → {id:"b3", stage:"B"}; anything else → null. */
+  /**
+   * The practice tracks, in display order. A test id is the track prefix + its number:
+   * "3" → grade 2 stage A, "b3" → grade 2 stage B, "g3b3" → grade 3 stage B.
+   */
+  const TRACKS = [
+    { key: 'g2a', prefix: '', grade: "כיתה ב'", stage: "שלב א'", timed: true },
+    { key: 'g2b', prefix: 'b', grade: "כיתה ב'", stage: "שלב ב'", timed: false },
+    { key: 'g3b', prefix: 'g3b', grade: "כיתה ג'", stage: "שלב ב'", timed: false },
+  ];
+  const ID_RE = /^(g3b|b)?(\d+)$/;
+
+  /** {track, num} of a test id such as "g3b2", or null. */
+  function parseTestId(id) {
+    const m = ID_RE.exec(String(id || ''));
+    if (!m) return null;
+    return { track: TRACKS.find((t) => t.prefix === (m[1] || '')), num: Number(m[2]) };
+  }
+
+  /** "test_3.html" → {id:"3", stage:"A", track:"g2a"}; "test_g3b3.html" → {id:"g3b3", stage:"B", track:"g3b"}; else null. */
   function testIdFromFile(name) {
-    const m = /^test_(b?)(\d+)\.html$/.exec(String(name || ''));
-    return m ? { id: m[1] + m[2], stage: m[1] ? 'B' : 'A' } : null;
+    const m = /^test_((?:g3b|b)?\d+)\.html$/.exec(String(name || ''));
+    if (!m) return null;
+    const { track } = parseTestId(m[1]);
+    return { id: m[1], stage: track.key === 'g2a' ? 'A' : 'B', track: track.key };
+  }
+
+  /** Full name of a test: "כיתה ג' · שלב ב' · מבחן 2". */
+  function testLabel(id) {
+    const p = parseTestId(id);
+    return p ? p.track.grade + ' · ' + p.track.stage + ' · מבחן ' + p.num : 'מבחן ' + id;
   }
 
   /** The score group of a part heading: stage A "reading"/"math" by its h2, stage B the part number. */
@@ -111,7 +137,10 @@
     return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
   }
 
-  const api = { normalizeText, parseNumber, parseRule, expectedAnswer, isCorrect, formatTime, testIdFromFile, partLabel, LETTERS };
+  const api = {
+    normalizeText, parseNumber, parseRule, expectedAnswer, isCorrect, formatTime,
+    TRACKS, parseTestId, testIdFromFile, testLabel, partLabel, LETTERS,
+  };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.ShlavGrading = api;
 })(this);

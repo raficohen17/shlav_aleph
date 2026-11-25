@@ -16,12 +16,18 @@ TESTS_DIR = ROOT / "tests"
 OUT = ROOT / "quiz" / "tests-data.js"
 
 
+# test id prefix → (track key, stage), in display order (mirrors TRACKS in quiz/grading.js)
+TRACKS = {"": ("g2a", "A"), "b": ("g2b", "B"), "g3b": ("g3b", "B")}
+TRACK_ORDER = list(TRACKS)
+
+
 def test_key(path: pathlib.Path):
-    """Sort and id key: test_3.html → ("A", 3, "3"); test_b3.html → ("B", 3, "b3"); other files → None."""
-    match = re.fullmatch(r"test_(b?)(\d+)\.html", path.name)
+    """Sort and id key: test_3.html → (0, 3, "3"); test_b3.html → (1, 3, "b3"); test_g3b3.html → (2, 3, "g3b3")."""
+    match = re.fullmatch(r"test_(g3b|b)?(\d+)\.html", path.name)
     if not match:
         return None
-    return ("B" if match.group(1) else "A", int(match.group(2)), match.group(1) + match.group(2))
+    prefix = match.group(1) or ""
+    return (TRACK_ORDER.index(prefix), int(match.group(2)), prefix + match.group(2))
 
 
 def extract(html: str) -> dict:
@@ -46,13 +52,14 @@ def build() -> list:
     tests = []
     paths = [p for p in TESTS_DIR.glob("test_*.html") if test_key(p)]
     for path in sorted(paths, key=test_key):
-        stage, _, test_id = test_key(path)
+        order, _, test_id = test_key(path)
+        track, stage = TRACKS[TRACK_ORDER[order]]
         html = path.read_text(encoding="utf-8")
         q, rows = count_questions(html), count_key_rows(html)
         if q != rows:
             raise SystemExit(f"{path.name}: {q} questions but {rows} answer-key rows")
         item = extract(html)
-        item.update({"id": test_id, "stage": stage, "pdf": f"pdf/test_{test_id}.pdf", "questions": q})
+        item.update({"id": test_id, "stage": stage, "track": track, "pdf": f"pdf/test_{test_id}.pdf", "questions": q})
         tests.append(item)
     return tests
 
