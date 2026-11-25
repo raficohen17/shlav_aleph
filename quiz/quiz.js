@@ -5,18 +5,19 @@
 
   const G = window.ShlavGrading;
   const TESTS = window.SHLAV_TESTS || [];
-  // stage A: the real test is ~40 minutes; stage B: no limit shown (elapsed time only)
-  const TIME_LIMIT = { A: 40 * 60, B: Infinity };
+  // a timed track (grade 2 stage A) shows the real test's ~40 minutes; stage B shows elapsed time only
+  const STAGE_A_LIMIT = 40 * 60;
   const OPTION = 'ol.opts li, .fig-opts .fo';
   const QUESTION = '.q:not(.cell)'; // stage B marks the "?" figure cell with class q too
   const $ = (sel, el = document) => el.querySelector(sel);
-  const limitOf = (test) => TIME_LIMIT[test.stage] || TIME_LIMIT.A;
+  const trackOf = (test) => (G.parseTestId(test.id) || { track: G.TRACKS[0] }).track;
+  const limitOf = (test) => (trackOf(test).timed ? STAGE_A_LIMIT : Infinity);
 
   const ui = {
     picker: $('#picker'), list: $('#test-list'), runner: $('#runner'), paper: $('#paper'),
     title: $('#run-title'), timer: $('#timer'), progress: $('#progress'), instant: $('#instant'),
     submit: $('#submit'), restart: $('#restart'), back: $('#back'), pdf: $('#pdf-link'),
-    summary: $('#summary'),
+    summary: $('#summary'), all: $('#all-tests'),
   };
 
   let current = null; // { test, items, startedAt, submitted, timerId }
@@ -37,14 +38,16 @@
   function clear(id) { try { localStorage.removeItem(storeKey(id)); } catch (e) { /* ignore */ } }
 
   // ---------- picker ----------
-  function renderPicker() {
+  // onlyTrack: a track key from "#track-<key>" shows that track alone
+  function renderPicker(onlyTrack) {
     ui.list.innerHTML = '';
-    [['A', "שלב א'"], ['B', "שלב ב'"]].forEach(([stage, name]) => {
-      const tests = TESTS.filter((t) => (t.stage || 'A') === stage);
+    G.TRACKS.filter((tr) => !onlyTrack || tr.key === onlyTrack).forEach((tr) => {
+      const tests = TESTS.filter((t) => trackOf(t).key === tr.key);
       if (!tests.length) return;
       const head = document.createElement('li');
       head.className = 'pick-stage';
-      head.textContent = name;
+      head.id = 'track-' + tr.key;
+      head.textContent = tr.grade + ' · ' + tr.stage;
       ui.list.appendChild(head);
       tests.forEach((t) => {
         const saved = load(t.id);
@@ -52,14 +55,13 @@
         li.className = 'pick';
         const status = saved ? (saved.submitted ? 'נבדק' : 'בהתקדמות') : '';
         li.innerHTML =
-          '<a class="pick-btn" href="#test-' + t.id + '"><span class="pick-num">' + escapeHtml(displayName(t)) + '</span>' +
+          '<a class="pick-btn" href="#test-' + t.id + '"><span class="pick-num">מבחן ' + G.parseTestId(t.id).num + '</span>' +
           '<span class="pick-meta">' + t.questions + ' שאלות' + (status ? ' · ' + status : '') + '</span></a>';
         ui.list.appendChild(li);
       });
     });
+    ui.all.hidden = !onlyTrack;
   }
-
-  const displayName = (t) => 'מבחן ' + String(t.id).replace(/^b/, 'ב');
 
   // ---------- building a test ----------
   function partOf(el, headings) {
@@ -129,7 +131,7 @@
     };
     ui.paper.innerHTML = '';
     ui.paper.appendChild(built.root);
-    ui.title.textContent = test.title || displayName(test);
+    ui.title.textContent = G.testLabel(test.id);
     ui.pdf.href = test.pdf;
     ui.summary.hidden = true;
     ui.summary.innerHTML = '';
@@ -223,7 +225,7 @@
     ui.summary.innerHTML =
       '<h2>תוצאה: ' + total + ' מתוך ' + current.items.length + '</h2>' +
       '<p>' + parts.map(([name, v]) => escapeHtml(name) + ': ' + v[0] + '/' + v[1]).join(' · ') +
-      ' · זמן: ' + G.formatTime(current.elapsed) + (over ? ' (יותר מ-40 דקות)' : '') + '</p>' +
+      ' · זמן: ' + G.formatTime(current.elapsed) + (over ? ' (יותר מ-' + STAGE_A_LIMIT / 60 + ' דקות)' : '') + '</p>' +
       '<p class="hint">ליד כל שאלה מופיעים התשובה הנכונה, הסבר וטריק. כדאי לעבור דווקא על השאלות שסומנו ✗.</p>';
     ui.summary.hidden = false;
     ui.submit.disabled = true;
@@ -273,18 +275,19 @@
   });
   ui.back.addEventListener('click', () => { location.hash = ''; });
 
-  function showPicker() {
+  function showPicker(onlyTrack) {
     stopTimer();
     current = null;
     ui.runner.hidden = true;
     ui.picker.hidden = false;
     ui.submit.disabled = false;
-    renderPicker();
+    renderPicker(onlyTrack);
   }
 
   function route() {
-    const m = /^#test-(b?\d+)$/.exec(location.hash);
-    if (m) { ui.submit.disabled = false; startTest(m[1]); } else showPicker();
+    const test = /^#test-((?:g3b|b)?\d+)$/.exec(location.hash);
+    const track = /^#track-(\w+)$/.exec(location.hash);
+    if (test) { ui.submit.disabled = false; startTest(test[1]); } else showPicker(track ? track[1] : null);
   }
   window.addEventListener('hashchange', route);
   route();

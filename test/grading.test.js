@@ -39,9 +39,18 @@ test('stage B multiple choice uses the leading option number', () => {
 });
 
 test('testIdFromFile', () => {
-  assert.deepEqual(g.testIdFromFile('test_3.html'), { id: '3', stage: 'A' });
-  assert.deepEqual(g.testIdFromFile('test_b7.html'), { id: 'b7', stage: 'B' });
+  assert.deepEqual(g.testIdFromFile('test_3.html'), { id: '3', stage: 'A', track: 'g2a' });
+  assert.deepEqual(g.testIdFromFile('test_b7.html'), { id: 'b7', stage: 'B', track: 'g2b' });
+  assert.deepEqual(g.testIdFromFile('test_g3b2.html'), { id: 'g3b2', stage: 'B', track: 'g3b' });
+  assert.equal(g.testIdFromFile('test_g3a2.html'), null);
   assert.equal(g.testIdFromFile('reference_b.html'), null);
+});
+
+test('testLabel names the grade, stage and number', () => {
+  assert.equal(g.testLabel('4'), "כיתה ב' · שלב א' · מבחן 4");
+  assert.equal(g.testLabel('b4'), "כיתה ב' · שלב ב' · מבחן 4");
+  assert.equal(g.testLabel('g3b12'), "כיתה ג' · שלב ב' · מבחן 12");
+  assert.equal(g.parseTestId('x1'), null);
 });
 
 test('partLabel groups stage A by subject and stage B by part number', () => {
